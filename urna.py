@@ -1,5 +1,26 @@
 import sys
 
+class console_output:
+    @classmethod
+    def title (self):
+        print('                     Urna eletrônica                    ')
+
+    @classmethod
+    def menu (self, name, index):
+        print(f':: Para o Candidato {name} - Digite [{index}]')
+
+    @classmethod
+    def sep (self):
+        print('--------------------------------------------------------')
+
+    @classmethod
+    def new_line (self):
+        print('\r\n')
+
+    @classmethod
+    def exit_option (self):
+        print(':: Para sair - Digite [0]')
+
 class Candidate:
     def __init__(self, name, votes):
         self.name = name
@@ -38,13 +59,15 @@ class ElectronicVotingMachine:
     @classmethod
     def banner (self):
         candidates = self.candidates
-        print('                     Urna eletrônica                    ')
-        print('--------------------------------------------------------')
+        console_output.new_line()
+        console_output.title()
+        console_output.sep()
         for candidate in candidates:
             if candidate:
-                print(f':: Para o Candidato {candidate.name} - Digite [{candidates.index(candidate)}]')
-        print(':: Para sair - Digite [0]')
-        print('--------------------------------------------------------\r\n')
+                console_output.menu(candidate.name, candidates.index(candidate))
+        console_output.exit_option()
+        console_output.sep()
+        console_output.new_line()
 
 class CheckUrn:
     def __init__(self, candidates) -> None:
@@ -75,14 +98,32 @@ class CheckUrn:
             else:
                 print(f'O candidato(a) {candidate.name} teve, {candidate.votes}, votos.')
         print(self.verifyWinnerCandidate())
-    
+
+def registerDataWithCallback (callback, **keysargs):
+    register = keysargs.get('register')
+    candidates = []
+    if register:
+        for i in range(0, int(register)):
+            text = f':: [{i + 1}/{register}] Digite o nome do candidato: '
+            name = input(text)
+            candidates.append(Candidate(name, 0))
+            sys.stdout.write("\033[F")
+            sys.stdout.write("\033[K")
+        candidates.append(Candidate.getNull())
+        callback(candidates)
+
 if __name__ == '__main__':
-    ElectronicVotingMachine.register([
+    if len(sys.argv) > 1:
+        amount = sys.argv[1].split('=')[1]
+        registerDataWithCallback(ElectronicVotingMachine.register, register=amount)
+    else:
+        ElectronicVotingMachine.register([
         Candidate('John Doe', 0),
         Candidate('Linus Torvalds', 0),
         Candidate('Judd Vinet', 0),
         Candidate.getNull()
     ])
+    print('\x1b[2J\x1b[1;1H', end='')
     ElectronicVotingMachine.banner()
     while True:
         try:
